@@ -30,22 +30,37 @@ var ball = Bodies.circle(90, 280, 20, {
         }
     }
 });
+var car = Bodies.rectangle(130, 280, 80, 20)
 
-World.add(engine.world, [topWall, leftWall, rightWall, bottomWall, ball]);
+World.add(engine.world, [topWall, leftWall, rightWall, bottomWall, ball, car]);
 
 Engine.run(engine);
 
 Render.run(render);
-var goButt = document.createElement('BUTTON')
-goButt.innerText = 'GO'
-document.body.appendChild(goButt)
-goButt.addEventListener('click', ()=> {
+var leftButt = document.createElement('BUTTON')
+leftButt.innerText = 'left'
+document.body.appendChild(leftButt)
+leftButt.addEventListener('click', () => {
     Body.applyForce(
-        ball,
-            {x: ball.position.x, y: ball.position.y},
-            {x: 0.04, y: 0}
+        car,
+        { x: ball.position.x, y: ball.position.y },
+        { x: -0.04, y: 0 }
     )
 })
+var rightButt = document.createElement('BUTTON')
+rightButt.innerText = 'right'
+document.body.appendChild(rightButt)
+rightButt.addEventListener('click', () => {
+    Body.applyForce(
+        car,
+        { x: ball.position.x, y: ball.position.y },
+        { x: 0.04, y: 0 }
+    )
+})
+
+ball.friction = 0.05;
+ball.frictionAir = 0.0005;
+ball.restitution = 0.9;
 // $(".force").on("click", function () {
 //     Body.applyForce(
 //         ball,

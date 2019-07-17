@@ -5,7 +5,8 @@ const Engine = Matter.Engine,
     Body = Matter.Body,
     // Composites = Matter.Composites,
     // Composite = Matter.Composite,
-    Constraint = Matter.Constraint;
+    Constraint = Matter.Constraint,
+    Detector = Matter.Detector;
 
 let engine = Engine.create();
 document.body.style.margin = '0'
@@ -29,10 +30,14 @@ let bottomWall = Bodies.rectangle(
     99,
     {
         isStatic: true,
+        friction: 0.2,
         render: {
             fillStyle: '#6a3',
-            strokeStyle: '#3a0',
-            lineWidth: 2
+            sprite: {
+                texture: "grass.png",
+                xScale: 0.3,
+                yScale: 0.3
+            }
         }
     }
 )
@@ -139,8 +144,8 @@ var rightWall = Bodies.rectangle(
 )
 // Ball
 var ball = Bodies.circle(
-    render.options.width / 2 + 100,
-    render.options.height - 100,
+    render.options.width / 2,
+    render.options.height - 300,
     40,
     {
         render: {
@@ -153,7 +158,7 @@ var ball = Bodies.circle(
         },
         friction: 0.1,
         frictionAir: 0.01,
-        restitution: 0.99,
+        restitution: 1,
         mass: 1
     }
 );
@@ -171,8 +176,8 @@ car.body = Bodies.trapezoid(
             fillStyle: 'blue',
             sprite: {
                 texture: "car.png",
-                xScale: 0.1,
-                yScale: 0.1
+                xScale: 0.30,
+                yScale: 0.30
             }
         }
     }
@@ -222,6 +227,8 @@ car.backAxis = Constraint.create(
         angleB: 0
     }
 )
+
+
 // var options = {
 //     bodyA: car,
 //     pointA: { x: 30, y: 17 },
@@ -251,45 +258,61 @@ Engine.run(engine);
 Render.run(render);
 // Controls
 // Using an array to handle multiple keys being pressed
-let keysDown = []
-document.body.addEventListener('keydown', (e) => {
-    if (!keysDown.includes(e.key.toLocaleLowerCase())) {
-        keysDown.push(e.key.toLocaleLowerCase())
+let keysDown = {
+}
+document.body.onkeydown = function(e){
+    e.preventDefault() // cancels default actions
+    if (!keysDown[e.key.toLocaleLowerCase()]) {
+        keysDown[e.key.toLocaleLowerCase()] = true
     }
     console.log(keysDown)
-    move()
-})
+    return false; // cancels this function as well as default actions
+}
+// document.body.addEventListener('keydown', (e) => {
+//     e.preventDefault() // cancels default actions
+//     if (!keysDown[e.key.toLocaleLowerCase()]) {
+//         keysDown[e.key.toLocaleLowerCase()] = true
+//     }
+//     console.log(keysDown)
+//     return false; // cancels this function only
+// })
 document.body.addEventListener('keyup', (e) => {
-    keysDown.splice(keysDown.indexOf(e.key.toLocaleLowerCase))
+    e.preventDefault() // cancels default actions
+    keysDown[e.key.toLocaleLowerCase()] = false
+    return false; // cancels this function only
 })
+let i = 1
+setTimeout(() => {
+    setInterval(() => { move() }, 10)
+}, 3)
+
 car.frontWheel.friction = 1
 car.backWheel.friction = 1
 car.canJump1 = true
 car.canJump2 = false
 move = () => {
-    if (keysDown.includes('d')) {
-        if (car.frontWheel.angularVelocity < 1) {
-            Body.setAngularVelocity(car.frontWheel, car.frontWheel.angularVelocity + Math.PI / 10)
-            Body.setAngularVelocity(car.backWheel, car.frontWheel.angularVelocity + Math.PI / 10)
+    if (keysDown['d']) {
+        if (car.frontWheel.angularVelocity < 0.6) {
+            Body.setAngularVelocity(car.frontWheel, car.frontWheel.angularVelocity + Math.PI / 15)
+            Body.setAngularVelocity(car.backWheel, car.frontWheel.angularVelocity + Math.PI / 15)
         }
     }
-    if (keysDown.includes('a')) {
-        if (car.frontWheel.angularVelocity > -1) {
-            Body.setAngularVelocity(car.frontWheel, car.frontWheel.angularVelocity - Math.PI / 10)
-            Body.setAngularVelocity(car.backWheel, car.frontWheel.angularVelocity - Math.PI / 10)
+    if (keysDown['a']) {
+        if (car.frontWheel.angularVelocity > -0.6) {
+            Body.setAngularVelocity(car.frontWheel, car.frontWheel.angularVelocity - Math.PI / 15)
+            Body.setAngularVelocity(car.backWheel, car.frontWheel.angularVelocity - Math.PI / 15)
         }
     }
-    if (keysDown.includes(' ')) {
+    if (keysDown['e']) {
         Body.applyForce(
             car.body,
-            { x: car.body.position.x, y: car.body.position.y },
-            { x: 0.015 * (Math.cos(car.body.angle)), y: 0.015 * (Math.sin(car.body.angle)) }
+            { x: car.body.position.x-60, y: car.body.position.y-10 },
+            { x: 0.003 * (Math.cos(car.body.angle)), y: 0.003 * (Math.sin(car.body.angle)) }
         )
     }
-    if (keysDown.includes('w')) {
-        keysDown.splice(keysDown.indexOf('w'))
+    if (keysDown['w']) {
         if (car.canJump1) {
-            Body.applyForce(
+            Body.applyForce( 
                 car.body,
                 { x: car.body.position.x, y: car.body.position.y },
                 { x: 0, y: -0.07 }
@@ -299,24 +322,24 @@ move = () => {
             setTimeout(() => { car.canJump1 = true, car.canJump2 = false }, 2000)
         }
         else if (car.canJump2) {
-            if (keysDown.includes('a')) {
+            if (keysDown['a']) {
                 Body.applyForce(
                     car.body,
                     { x: car.body.position.x, y: car.body.position.y },
-                    { x: -0.05, y: -0.02 }
+                    { x: -0.05, y: -0.06 }
                 )
                 Body.setAngularVelocity(
                     car.body, -0.22
                 )
             }
-            else if (keysDown.includes('d')) {
+            else if (keysDown['d']) {
                 Body.applyForce(
                     car.body,
                     { x: car.body.position.x, y: car.body.position.y },
-                    { x: 0.05, y: -0.02 }
+                    { x: 0.08, y: -0 }
                 )
                 Body.setAngularVelocity(
-                    car.body, 0.22
+                    car.body, 0.3
                 )
             }
             else {
@@ -333,184 +356,10 @@ move = () => {
 // Change background image to very awesome rocket league bg
 render.canvas.style.background = 'URL(background.jpg)'
 
-
-
-
-
-
-
-
-// var topWall = Bodies.rectangle(frameWidth / 2, 50, frameWidth, wallThickness, { isStatic: true });
-// var leftWall = Bodies.rectangle(50, frameHeight / 2, wallThickness, frameHeight, { isStatic: true });
-// var rightWall = Bodies.rectangle(frameWidth - 50, frameHeight / 2, wallThickness, frameHeight, { isStatic: true });
-// var bottomWall = Bodies.rectangle(frameWidth / 2, frameHeight - 50, frameWidth, wallThickness, { isStatic: true });
-
-// // Ball
-// var ball = Bodies.circle(150, 280, 30, {
-//     render: {
-//         sprite: {
-//             texture: "https://opengameart.org/sites/default/files/styles/medium/public/SoccerBall_0.png",
-//             xScale: 0.6,
-//             yScale: 0.6
-//         }
-//     }
-// });
-// ball.friction = 0.03;
-// ball.frictionAir = 0.001;
-// ball.restitution = 0.7;
-// // Car
-// var car = Bodies.rectangle(190, 280, 80, 20)
-// car.friction = 0.001;
-// car.frictionAir = 0.001;
-// car.restitution = 0
-
-// World.add(engine.world, [topWall, leftWall, rightWall, bottomWall, ball, car]);
-
-// Engine.run(engine);
-
-// Render.run(render);
-// var controller = document.createElement('INPUT')
-// document.body.appendChild(controller)
-// controller.style.width = '100%'
-// controller.style.height = '200px'
-// controller.style.display = 'block'
-// car.canjump1 = true
-// car.canjump2 = false
-// controller.keys = []
-// car.move = () => {
-//     if ((controller.keys.includes('w') || controller.keys.includes(' '))) {
-//         if (car.position.y > 620 && car.canjump1) {
-//             Body.applyForce(
-//                 car,
-//                 { x: car.position.x, y: car.position.y },
-//                 { x: 0, y: -0.03 }
-//             )
-
-//             controller.keys.splice(controller.keys.indexOf('w'))
-//             controller.keys.splice(controller.keys.indexOf(' '))
-//             car.canjump1 = false
-//             car.canjump2 = true
-//             setTimeout(() => {
-//                 car.canjump1 = true
-//                 car.canjump2 = false
-//             }, 500)
-//         }
-//         else if (car.canjump2) {
-//             car.canjump2 = false
-//             if (controller.keys.includes('a')) {
-//                 Body.applyForce(
-//                     car,
-//                     { x: car.position.x, y: car.position.y },
-//                     { x: -0.01 * gravity, y: -0.01 * gravity }
-//                 )
-//                 Body.setAngularVelocity(car, -1 * Math.PI / 30);
-//                 if (!controller.keys.includes('a')) {
-//                     controller.keys.push('a')
-//                 }
-//             }
-//             else if (controller.keys.includes('d')) {
-//                 Body.applyForce(
-//                     car,
-//                     { x: car.position.x, y: car.position.y },
-//                     { x: 0.01 * gravity, y: -0.01 * gravity }
-//                 )
-//                 Body.setAngularVelocity(car, Math.PI / 30);
-//                 if (!controller.keys.includes('d')) {
-//                     controller.keys.push('d')
-//                 }
-//             }
-//             else {
-//                 Body.applyForce(
-//                     car,
-//                     { x: car.position.x, y: car.position.y },
-//                     { x: 0, y: -0.02 * gravity }
-//                 )
-//             }
-//         }
-//     }
-//     else if (controller.keys.includes('a')) {
-//         // Body.applyForce(
-//         //     car,
-//         //     { x: car.position.x, y: car.position.y },
-//         //     { x: (-0.0005 * carSpeed) * Math.cos(car.angle), y: (-0.0005 * carSpeed) * Math.sin(car.angle) }
-//         // )
-//         if (car.velocity.x < maxSpeed) {
-//             Body.setVelocity(
-//                 car, { x: car.velocity.x - (acceleration * Math.cos(car.angle)), y: car.velocity.y }
-//             )
-//         }
-//     }
-//     else if (controller.keys.includes('d')) {
-//         // Body.applyForce(
-//         //     car,
-//         //     { x: car.position.x, y: car.position.y },
-//         //     { x: (0.0005 * carSpeed) * Math.cos(car.angle), y: (0.0005 * carSpeed) * Math.sin(car.angle) }
-//         // )
-//         if (-car.velocity.x < maxSpeed) {
-//             Body.setVelocity(
-//                 car, { x: car.velocity.x + (acceleration * Math.cos(car.angle)), y: car.velocity.y }
-//             )
-//         }
-//     }
-// }
-// controller.addEventListener('keydown', (e) => {
-//     controller.keys.push(e.key)
-//     console.log(controller.keys)
-//     car.move()
-// })
-// controller.addEventListener('keyup', (e) => {
-//     controller.keys.splice(controller.keys.indexOf(e.key))
-//     console.log(controller.keys)
-// })
-// // Body.applyForce(car, 
-// //     {x:car.position.x, y: car.position.y},
-// //     {x: -0.05, y: 0}
-// //     )
-
-// var leftButt = document.createElement('BUTTON')
-// leftButt.innerText = 'left'
-// document.body.appendChild(leftButt)
-// leftButt.addEventListener('click', () => {
-//     Body.applyForce(
-//         car,
-//         { x: ball.position.x, y: ball.position.y },
-//         { x: -0.04, y: 0 }
-//     )
-// })
-// var rightButt = document.createElement('BUTTON')
-// rightButt.innerText = 'right'
-// document.body.appendChild(rightButt)
-// rightButt.addEventListener('click', () => {
-//     Body.applyForce(
-//         car,
-//         { x: ball.position.x, y: ball.position.y },
-//         { x: 0.04, y: 0 }
-//     )
-// })
-// // $(".force").on("click", function () {
-// //     Body.applyForce(
-// //         ball,
-// //         { x: ball.position.x, y: ball.position.y },
-// //         { x: 0.04, y: 0 }
-// //     );
-// // });
-
-// // $(".vforce").on("click", function () {
-// //     Body.applyForce(
-// //         ball,
-// //         { x: ball.position.x, y: ball.position.y },
-// //         { x: 0, y: -0.04 }
-// //     );
-// // });
-
-// // $(".red-friction").on("click", function () {
-// //     ball.friction = 0.05;
-// //     ball.frictionAir = 0.0005;
-// //     ball.restitution = 0.9;
-// // });
-
-// // $(".res-friction").on("click", function () {
-// //     ball.friction = 0.1;
-// //     ball.frictionAir = 0.001;
-// //     ball.restitution = 0;
-// // });
+let board = document.createElement('DIV', {
+    style: {
+        width: '500px',
+        height: '200px',
+        background: 'rgba(0,0,0,0.3)'
+    }
+})

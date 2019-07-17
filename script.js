@@ -1,41 +1,49 @@
-var Engine = Matter.Engine,
+const Engine = Matter.Engine,
     Render = Matter.Render,
     World = Matter.World,
     Bodies = Matter.Bodies,
     Body = Matter.Body;
 
-var engine = Engine.create();
+let engine = Engine.create();
 
-var render = Render.create({
-    element: document.body,
+let gameWindow = document.createElement('DIV')
+document.body.appendChild(gameWindow)
+gameWindow.style.width = '100%'
+gameWindow.style.height = '100vh'
+gameWindow.style.border = '1px solid grey'
+let render = Render.create({
+    element: gameWindow,
     engine: engine,
     options: {
-        width: 800,
-        height: 400,
+        width: 1400,
+        height: 700,
         wireframes: false
     }
 });
-
-var topWall = Bodies.rectangle(400, 50, 720, 20, { isStatic: true });
-var leftWall = Bodies.rectangle(50, 210, 20, 300, { isStatic: true });
-var rightWall = Bodies.rectangle(750, 210, 20, 300, { isStatic: true });
-var bottomWall = Bodies.rectangle(400, 350, 720, 20, { isStatic: true });
+//Stadium
+var topWall = Bodies.rectangle(frameWidth / 2, 50, frameWidth, wallThickness, { isStatic: true });
+var leftWall = Bodies.rectangle(50, frameHeight / 2, wallThickness, frameHeight, { isStatic: true });
+var rightWall = Bodies.rectangle(frameWidth - 50, frameHeight / 2, wallThickness, frameHeight, { isStatic: true });
+var bottomWall = Bodies.rectangle(frameWidth / 2, frameHeight - 50, frameWidth, wallThickness, { isStatic: true });
 
 // Ball
-var ball = Bodies.circle(90, 280, 20, {
+var ball = Bodies.circle(150, 280, 30, {
     render: {
         sprite: {
             texture: "https://opengameart.org/sites/default/files/styles/medium/public/SoccerBall_0.png",
-            xScale: 0.4,
-            yScale: 0.4
+            xScale: 0.6,
+            yScale: 0.6
         }
     }
 });
-ball.friction = 0.05;
-ball.frictionAir = 0.0005;
-ball.restitution = 0.9;
+ball.friction = 0.03;
+ball.frictionAir = 0.001;
+ball.restitution = 0.7;
 // Car
-var car = Bodies.rectangle(130, 280, 80, 20)
+var car = Bodies.rectangle(190, 280, 80, 20)
+car.friction = 0.001;
+car.frictionAir = 0.001;
+car.restitution = 0
 
 World.add(engine.world, [topWall, leftWall, rightWall, bottomWall, ball, car]);
 
@@ -44,49 +52,96 @@ Engine.run(engine);
 Render.run(render);
 var controller = document.createElement('INPUT')
 document.body.appendChild(controller)
-controller.style.width = '500px'
+controller.style.width = '100%'
 controller.style.height = '200px'
 controller.style.display = 'block'
 car.canjump1 = true
 car.canjump2 = false
-controller.addEventListener('keydown', (e) => {
-    switch (e.key) {
-        case 'w':
-            if (car.canjump1) {
-                car.canjump1 = false
-                car.canjump2 = true
-                Body.applyForce(car,
-                    { x: car.position.x, y: car.position.y },
-                    { x: 0, y: -0.04 }
-                )
-                setTimeout(() => { car.canjump1 = true; car.canjump2 = false }, 1000)
-            }
-            else if (car.canjump2) {
-                Body.applyForce(car,
-                    { x: car.position.x, y: car.position.y },
-                    { x: 0, y: -0.02 }
-                )
-                Body.setAngularVelocity(car, Math.PI / 24);
+controller.keys = []
+car.move = () => {
+    if ((controller.keys.includes('w') || controller.keys.includes(' '))) {
+        if (car.position.y > 620 && car.canjump1) {
+            Body.applyForce(
+                car,
+                { x: car.position.x, y: car.position.y },
+                { x: 0, y: -0.03 }
+            )
+
+            controller.keys.splice(controller.keys.indexOf('w'))
+            controller.keys.splice(controller.keys.indexOf(' '))
+            car.canjump1 = false
+            car.canjump2 = true
+            setTimeout(() => {
+                car.canjump1 = true
                 car.canjump2 = false
+            }, 500)
+        }
+        else if (car.canjump2) {
+            car.canjump2 = false
+            if (controller.keys.includes('a')) {
+                Body.applyForce(
+                    car,
+                    { x: car.position.x, y: car.position.y },
+                    { x: -0.01 * gravity, y: -0.01 * gravity }
+                )
+                Body.setAngularVelocity(car, -1 * Math.PI / 30);
+                if (!controller.keys.includes('a')) {
+                    controller.keys.push('a')
+                }
             }
-
-            break;
-        case 'a':
-            Body.applyForce(car,
-                { x: car.position.x, y: car.position.y },
-                { x: -0.01, y: 0 }
-            )
-            break;
-        case 'd':
-            Body.applyForce(car,
-                { x: car.position.x, y: car.position.y },
-                { x: 0.01, y: 0 }
-            )
-            break;
-
-        default:
-            break;
+            else if (controller.keys.includes('d')) {
+                Body.applyForce(
+                    car,
+                    { x: car.position.x, y: car.position.y },
+                    { x: 0.01 * gravity, y: -0.01 * gravity }
+                )
+                Body.setAngularVelocity(car, Math.PI / 30);
+                if (!controller.keys.includes('d')) {
+                    controller.keys.push('d')
+                }
+            }
+            else {
+                Body.applyForce(
+                    car,
+                    { x: car.position.x, y: car.position.y },
+                    { x: 0, y: -0.02 * gravity }
+                )
+            }
+        }
     }
+    else if (controller.keys.includes('a')) {
+        // Body.applyForce(
+        //     car,
+        //     { x: car.position.x, y: car.position.y },
+        //     { x: (-0.0005 * carSpeed) * Math.cos(car.angle), y: (-0.0005 * carSpeed) * Math.sin(car.angle) }
+        // )
+        if (car.velocity.x < maxSpeed) {
+            Body.setVelocity(
+                car, { x: car.velocity.x - (acceleration * Math.cos(car.angle)), y: car.velocity.y }
+            )
+        }
+    }
+    else if (controller.keys.includes('d')) {
+        // Body.applyForce(
+        //     car,
+        //     { x: car.position.x, y: car.position.y },
+        //     { x: (0.0005 * carSpeed) * Math.cos(car.angle), y: (0.0005 * carSpeed) * Math.sin(car.angle) }
+        // )
+        if (-car.velocity.x < maxSpeed) {
+            Body.setVelocity(
+                car, { x: car.velocity.x + (acceleration * Math.cos(car.angle)), y: car.velocity.y }
+            )
+        }
+    }
+}
+controller.addEventListener('keydown', (e) => {
+    controller.keys.push(e.key)
+    console.log(controller.keys)
+    car.move()
+})
+controller.addEventListener('keyup', (e) => {
+    controller.keys.splice(controller.keys.indexOf(e.key))
+    console.log(controller.keys)
 })
 // Body.applyForce(car, 
 //     {x:car.position.x, y: car.position.y},

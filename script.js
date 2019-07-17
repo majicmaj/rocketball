@@ -7,6 +7,52 @@ const Engine = Matter.Engine,
     // Composite = Matter.Composite,
     Constraint = Matter.Constraint,
     Detector = Matter.Detector;
+time = 300
+document.body.style.fontFamily = "'Squada One', cursive"
+let board = document.createElement('SECTION')
+document.body.appendChild(board)
+board.innerText = time
+setInterval(() => {
+time-- ,
+    board.innerText = time
+}, 1000)
+
+board.style.position = 'absolute'
+board.style.background = 'rgba(0,0,0,0.8)'
+board.style.color = '#fff'
+board.style.width = '200px'
+board.style.height = '80px'
+board.style.zIndex = '5'
+board.style.textAlign = 'center'
+board.style.left = '860px'
+board.style.paddingTop = '30px'
+board.style.fontSize = '50px'
+let scoreBoard = document.createElement('DIV')
+document.body.appendChild(scoreBoard)
+scoreBoard.innerText = '0'
+scoreBoard.style.position = 'absolute'
+scoreBoard.style.background = 'rgba(0,0,255,0.8)'
+scoreBoard.style.color = '#fff'
+scoreBoard.style.width = '80px'
+scoreBoard.style.height = '80px'
+scoreBoard.style.zIndex = '5'
+scoreBoard.style.textAlign = 'center'
+scoreBoard.style.left = '780px'
+scoreBoard.style.paddingTop = '30px'
+scoreBoard.style.fontSize = '50px'
+let scoreBoard2 = document.createElement('DIV')
+document.body.appendChild(scoreBoard2)
+scoreBoard2.innerText = '0'
+scoreBoard2.style.position = 'absolute'
+scoreBoard2.style.background = 'rgba(255,150,0,0.8)'
+scoreBoard2.style.color = '#fff'
+scoreBoard2.style.width = '80px'
+scoreBoard2.style.height = '80px'
+scoreBoard2.style.zIndex = '5'
+scoreBoard2.style.textAlign = 'center'
+scoreBoard2.style.left = '1060px'
+scoreBoard2.style.paddingTop = '30px'
+scoreBoard2.style.fontSize = '50px'
 
 let engine = Engine.create();
 document.body.style.margin = '0'
@@ -20,8 +66,6 @@ let render = Render.create({
         wireframes: false
     }
 })
-// setTimeout(() => { }, 1)
-
 //Stadium
 let bottomWall = Bodies.rectangle(
     render.options.width / 2,
@@ -146,14 +190,14 @@ var rightWall = Bodies.rectangle(
 var ball = Bodies.circle(
     render.options.width / 2,
     render.options.height - 300,
-    40,
+    60,
     {
         render: {
             fillStyle: '#999',
             sprite: {
                 texture: "ball.png",
-                xScale: 0.3,
-                yScale: 0.3
+                xScale: 0.4,
+                yScale: 0.4
             }
         },
         friction: 0.1,
@@ -168,7 +212,7 @@ var car = {}
 car.body = Bodies.trapezoid(
     200,
     render.options.height - 100,
-    100,
+    130,
     20,
     0.2,
     {
@@ -260,13 +304,13 @@ Render.run(render);
 // Using an array to handle multiple keys being pressed
 let keysDown = {
 }
-document.body.onkeydown = function(e){
-    e.preventDefault() // cancels default actions
+document.body.onkeydown = function (e) {
+    //e.preventDefault() // cancels default actions
     if (!keysDown[e.key.toLocaleLowerCase()]) {
         keysDown[e.key.toLocaleLowerCase()] = true
     }
     console.log(keysDown)
-    return false; // cancels this function as well as default actions
+    //return false; // cancels this function as well as default actions
 }
 // document.body.addEventListener('keydown', (e) => {
 //     e.preventDefault() // cancels default actions
@@ -279,7 +323,7 @@ document.body.onkeydown = function(e){
 document.body.addEventListener('keyup', (e) => {
     e.preventDefault() // cancels default actions
     keysDown[e.key.toLocaleLowerCase()] = false
-    return false; // cancels this function only
+    //return false; // cancels this function only
 })
 let i = 1
 setTimeout(() => {
@@ -306,40 +350,40 @@ move = () => {
     if (keysDown['e']) {
         Body.applyForce(
             car.body,
-            { x: car.body.position.x-60, y: car.body.position.y-10 },
+            { x: car.body.position.x - 60, y: car.body.position.y - 10 },
             { x: 0.003 * (Math.cos(car.body.angle)), y: 0.003 * (Math.sin(car.body.angle)) }
         )
     }
     if (keysDown['w']) {
         if (car.canJump1) {
-            Body.applyForce( 
+            Body.applyForce(
                 car.body,
                 { x: car.body.position.x, y: car.body.position.y },
                 { x: 0, y: -0.07 }
             )
             car.canJump1 = false
-            car.canJump2 = true
-            setTimeout(() => { car.canJump1 = true, car.canJump2 = false }, 2000)
+            setTimeout(() => { car.canJump2 = true }, 100)
+            setTimeout(() => { car.canJump1 = true, car.canJump2 = false }, 1500)
         }
         else if (car.canJump2) {
             if (keysDown['a']) {
                 Body.applyForce(
                     car.body,
                     { x: car.body.position.x, y: car.body.position.y },
-                    { x: -0.05, y: -0.06 }
+                    { x: -0.05, y: -0.09 }
                 )
                 Body.setAngularVelocity(
-                    car.body, -0.22
+                    car.body, -0.3
                 )
             }
             else if (keysDown['d']) {
                 Body.applyForce(
                     car.body,
                     { x: car.body.position.x, y: car.body.position.y },
-                    { x: 0.08, y: -0 }
+                    { x: 0.1, y: 0.05 }
                 )
                 Body.setAngularVelocity(
-                    car.body, 0.3
+                    car.body, 0.4
                 )
             }
             else {
@@ -356,10 +400,3 @@ move = () => {
 // Change background image to very awesome rocket league bg
 render.canvas.style.background = 'URL(background.jpg)'
 
-let board = document.createElement('DIV', {
-    style: {
-        width: '500px',
-        height: '200px',
-        background: 'rgba(0,0,0,0.3)'
-    }
-})

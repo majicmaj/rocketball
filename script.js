@@ -2,20 +2,24 @@ const Engine = Matter.Engine,
     Render = Matter.Render,
     World = Matter.World,
     Bodies = Matter.Bodies,
-    Body = Matter.Body;
+    Body = Matter.Body,
+    // Composites = Matter.Composites,
+    // Composite = Matter.Composite,
+    Constraint = Matter.Constraint;
 
 let engine = Engine.create();
 document.body.style.margin = '0'
 let render = Render.create({
     element: document.body,
     engine: engine,
-    render: {fillStyle: 'red'},
+    render: { fillStyle: 'red' },
     options: {
         width: 1920,
         height: 850,
         wireframes: false
     }
 })
+setTimeout(() => { console.log('HERE'); render.canvas.style.background = 'URL(background.jpg)' }, 1)
 
 //Stadium
 let bottomWall = Bodies.rectangle(
@@ -35,7 +39,7 @@ let bottomWall = Bodies.rectangle(
 let topWall = Bodies.rectangle(
     render.options.width / 2,
     0,
-    render.options.width-412,
+    render.options.width - 412,
     50,
     {
         isStatic: true,
@@ -135,16 +139,142 @@ var rightWall = Bodies.rectangle(
 )
 // Ball
 var ball = Bodies.circle(
-    render.options.width/2,
-    render.options.height/2,
+    render.options.width / 2 + 100,
+    render.options.height / 2 - 100,
     30,
     {
         render: {
             fillStyle: '#999'
-        } 
+        }
     }
 );
 
+// Car
+var carFront = Bodies.trapezoid(
+    render.options.width / 2,
+    render.options.height - 100,
+    18,
+    30,
+    0.3,
+    {
+        render: {
+            fillStyle: 'blue'
+        }
+    }
+)
+var carCenter = Bodies.rectangle(
+    render.options.width / 2,
+    render.options.height - 100,
+    50,
+    30,
+    {
+        render: {
+            fillStyle: 'blue'
+        }
+    }
+)
+var carBack = Bodies.trapezoid(
+    render.options.width / 2,
+    render.options.height - 100,
+    20,
+    40,
+    0.3,
+    {
+        render: {
+            fillStyle: 'blue'
+        }
+    }
+)
+var carTop = Bodies.trapezoid(
+    render.options.width / 2,
+    render.options.height - 100,
+    50,
+    15,
+    0.25,
+    {
+        render: {
+            fillStyle: 'blue'
+        }
+    }
+)
+var frontWheel = Bodies.circle(
+    render.options.width / 2,
+    render.options.height - 100,
+    12,
+    {
+        render: {
+            fillStyle: 'black'
+        }
+    }
+)
+var backWheel = Bodies.circle(
+    render.options.width / 2,
+    render.options.height - 100,
+    12,
+    {
+        render: {
+            fillStyle: 'black'
+        }
+    }
+)
+var frontToCenter = Constraint.create({
+    bodyA: carCenter,
+    bodyB: carFront,
+    length: 0,
+    pointA: {x:-25, y: -5},
+    pointB: {x:0, y:12},
+    render: {
+        lineWidth: 0
+    }
+})
+var backToCenter = Constraint.create({
+    bodyA: carCenter,
+    bodyB: carBack,
+    length: 0,
+    pointA: {x:26, y: -5},
+    pointB: {x:0, y:16},
+    render: {
+        lineWidth: 0
+    }
+})
+var topToCenter = Constraint.create({
+    bodyA: carCenter,
+    bodyB: carTop,
+    length: 0,
+    pointA: {x:0, y: -15},
+    pointB: {x:0, y:7.5},
+    render: {
+        lineWidth: 0
+    }
+})
+var backToWheel = Constraint.create({
+    bodyA: backWheel,
+    bodyB: carBack,
+    length: 0,
+    pointA: {x:0, y: 0},
+    pointB: {x:25, y:0},
+    render: {
+        lineWidth: 0
+    }
+})
+var frontToWheel = Constraint.create({
+    bodyA: frontWheel,
+    bodyB: carFront,
+    length: 0,
+    pointA: {x:0, y: 0},
+    pointB: {x:-20, y:0},
+    render: {
+        lineWidth: 0
+    }
+})
+// var options = {
+//     bodyA: car,
+//     pointA: { x: 30, y: 17 },
+//     bodyB: wheel,
+//     length: 0,
+//     stiffness: 0
+// }
+// var carConstraint = Constraint.create(options)
 World.add(engine.world, [
     bottomWall,
     topWall,
@@ -154,7 +284,18 @@ World.add(engine.world, [
     rightGoalBackWall,
     rightWall,
     rightGoalTopWall,
-    ball
+    ball,
+    carCenter,
+    carFront,
+    carBack,
+    carTop,
+    frontWheel,
+    backWheel,
+    topToCenter,
+    frontToCenter,
+    frontToWheel,
+    backToCenter,
+    backToWheel
 ]);
 
 Engine.run(engine);

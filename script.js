@@ -19,7 +19,7 @@ let render = Render.create({
         wireframes: false
     }
 })
-setTimeout(() => { console.log('HERE'); render.canvas.style.background = 'URL(background.jpg)' }, 1)
+// setTimeout(() => { }, 1)
 
 //Stadium
 let bottomWall = Bodies.rectangle(
@@ -140,133 +140,88 @@ var rightWall = Bodies.rectangle(
 // Ball
 var ball = Bodies.circle(
     render.options.width / 2 + 100,
-    render.options.height / 2 - 100,
-    30,
+    render.options.height - 100,
+    40,
     {
         render: {
-            fillStyle: '#999'
-        }
+            fillStyle: '#999',
+            sprite: {
+                texture: "ball.png",
+                xScale: 0.3,
+                yScale: 0.3
+            }
+        },
+        friction: 0.1,
+        frictionAir: 0.01,
+        restitution: 0.99,
+        mass: 1
     }
 );
 
 // Car
-var carFront = Bodies.trapezoid(
-    render.options.width / 2,
+var car = {}
+car.body = Bodies.trapezoid(
+    200,
     render.options.height - 100,
-    18,
-    30,
-    0.3,
-    {
-        render: {
-            fillStyle: 'blue'
-        }
-    }
-)
-var carCenter = Bodies.rectangle(
-    render.options.width / 2,
-    render.options.height - 100,
-    50,
-    30,
-    {
-        render: {
-            fillStyle: 'blue'
-        }
-    }
-)
-var carBack = Bodies.trapezoid(
-    render.options.width / 2,
-    render.options.height - 100,
+    100,
     20,
-    40,
-    0.3,
+    0.2,
     {
         render: {
-            fillStyle: 'blue'
+            fillStyle: 'blue',
+            sprite: {
+                texture: "car.png",
+                xScale: 0.1,
+                yScale: 0.1
+            }
         }
     }
 )
-var carTop = Bodies.trapezoid(
-    render.options.width / 2,
+car.frontWheel = Bodies.circle(
+    170,
     render.options.height - 100,
-    50,
-    15,
-    0.25,
+    14,
     {
         render: {
-            fillStyle: 'blue'
+            fillStyle: '#000'
         }
     }
 )
-var frontWheel = Bodies.circle(
-    render.options.width / 2,
+car.backWheel = Bodies.circle(
+    230,
     render.options.height - 100,
-    12,
+    14,
     {
         render: {
-            fillStyle: 'black'
+            fillStyle: '#000'
         }
     }
 )
-var backWheel = Bodies.circle(
-    render.options.width / 2,
-    render.options.height - 100,
-    12,
+car.frontAxis = Constraint.create(
     {
+        bodyA: car.body,
+        bodyB: car.frontWheel,
+        pointA: { x: -40, y: 10 },
+        length: 14,
         render: {
-            fillStyle: 'black'
+            strokeStyle: '#999',
+            lineWidth: 0,
         }
     }
 )
-var frontToCenter = Constraint.create({
-    bodyA: carCenter,
-    bodyB: carFront,
-    length: 0,
-    pointA: {x:-25, y: -5},
-    pointB: {x:0, y:12},
-    render: {
-        lineWidth: 0
+car.backAxis = Constraint.create(
+    {
+        bodyA: car.body,
+        bodyB: car.backWheel,
+        pointA: { x: 40, y: 10 },
+        length: 14,
+        render: {
+            strokeStyle: '#999',
+            lineWidth: 0,
+        },
+        angleB: 0
     }
-})
-var backToCenter = Constraint.create({
-    bodyA: carCenter,
-    bodyB: carBack,
-    length: 0,
-    pointA: {x:26, y: -5},
-    pointB: {x:0, y:16},
-    render: {
-        lineWidth: 0
-    }
-})
-var topToCenter = Constraint.create({
-    bodyA: carCenter,
-    bodyB: carTop,
-    length: 0,
-    pointA: {x:0, y: -15},
-    pointB: {x:0, y:7.5},
-    render: {
-        lineWidth: 0
-    }
-})
-var backToWheel = Constraint.create({
-    bodyA: backWheel,
-    bodyB: carBack,
-    length: 0,
-    pointA: {x:0, y: 0},
-    pointB: {x:25, y:0},
-    render: {
-        lineWidth: 0
-    }
-})
-var frontToWheel = Constraint.create({
-    bodyA: frontWheel,
-    bodyB: carFront,
-    length: 0,
-    pointA: {x:0, y: 0},
-    pointB: {x:-20, y:0},
-    render: {
-        lineWidth: 0
-    }
-})
+)
 // var options = {
 //     bodyA: car,
 //     pointA: { x: 30, y: 17 },
@@ -285,22 +240,106 @@ World.add(engine.world, [
     rightWall,
     rightGoalTopWall,
     ball,
-    carCenter,
-    carFront,
-    carBack,
-    carTop,
-    frontWheel,
-    backWheel,
-    topToCenter,
-    frontToCenter,
-    frontToWheel,
-    backToCenter,
-    backToWheel
+    car.frontWheel,
+    car.backWheel,
+    car.frontAxis,
+    car.backAxis,
+    car.body,
 ]);
 
 Engine.run(engine);
-
 Render.run(render);
+// Controls
+// Using an array to handle multiple keys being pressed
+let keysDown = []
+document.body.addEventListener('keydown', (e) => {
+    if (!keysDown.includes(e.key.toLocaleLowerCase())) {
+        keysDown.push(e.key.toLocaleLowerCase())
+    }
+    console.log(keysDown)
+    move()
+})
+document.body.addEventListener('keyup', (e) => {
+    keysDown.splice(keysDown.indexOf(e.key.toLocaleLowerCase))
+})
+car.frontWheel.friction = 1
+car.backWheel.friction = 1
+car.canJump1 = true
+car.canJump2 = false
+move = () => {
+    if (keysDown.includes('d')) {
+        if (car.frontWheel.angularVelocity < 1) {
+            Body.setAngularVelocity(car.frontWheel, car.frontWheel.angularVelocity + Math.PI / 10)
+            Body.setAngularVelocity(car.backWheel, car.frontWheel.angularVelocity + Math.PI / 10)
+        }
+    }
+    if (keysDown.includes('a')) {
+        if (car.frontWheel.angularVelocity > -1) {
+            Body.setAngularVelocity(car.frontWheel, car.frontWheel.angularVelocity - Math.PI / 10)
+            Body.setAngularVelocity(car.backWheel, car.frontWheel.angularVelocity - Math.PI / 10)
+        }
+    }
+    if (keysDown.includes(' ')) {
+        Body.applyForce(
+            car.body,
+            { x: car.body.position.x, y: car.body.position.y },
+            { x: 0.015 * (Math.cos(car.body.angle)), y: 0.015 * (Math.sin(car.body.angle)) }
+        )
+    }
+    if (keysDown.includes('w')) {
+        keysDown.splice(keysDown.indexOf('w'))
+        if (car.canJump1) {
+            Body.applyForce(
+                car.body,
+                { x: car.body.position.x, y: car.body.position.y },
+                { x: 0, y: -0.07 }
+            )
+            car.canJump1 = false
+            car.canJump2 = true
+            setTimeout(() => { car.canJump1 = true, car.canJump2 = false }, 2000)
+        }
+        else if (car.canJump2) {
+            if (keysDown.includes('a')) {
+                Body.applyForce(
+                    car.body,
+                    { x: car.body.position.x, y: car.body.position.y },
+                    { x: -0.05, y: -0.02 }
+                )
+                Body.setAngularVelocity(
+                    car.body, -0.22
+                )
+            }
+            else if (keysDown.includes('d')) {
+                Body.applyForce(
+                    car.body,
+                    { x: car.body.position.x, y: car.body.position.y },
+                    { x: 0.05, y: -0.02 }
+                )
+                Body.setAngularVelocity(
+                    car.body, 0.22
+                )
+            }
+            else {
+                Body.applyForce(
+                    car.body,
+                    { x: car.body.position.x, y: car.body.position.y },
+                    { x: 0, y: -0.05 }
+                )
+            }
+            car.canJump2 = false
+        }
+    }
+}
+// Change background image to very awesome rocket league bg
+render.canvas.style.background = 'URL(background.jpg)'
+
+
+
+
+
+
+
+
 // var topWall = Bodies.rectangle(frameWidth / 2, 50, frameWidth, wallThickness, { isStatic: true });
 // var leftWall = Bodies.rectangle(50, frameHeight / 2, wallThickness, frameHeight, { isStatic: true });
 // var rightWall = Bodies.rectangle(frameWidth - 50, frameHeight / 2, wallThickness, frameHeight, { isStatic: true });

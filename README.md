@@ -1,13 +1,57 @@
-# Rocket Ball
-## Description
-A javascript based browser 2D soccer game played by cars strapped with jet engines on a soccer field with a giant ball using matter.js
-## Planned Features
-### Bronze Plan
-The game runs on the browser where there is at least one car object and a ball object on a stadium. The car can interact with the ball object and can score goals by moving the ball into a designated goal area on the stadium.
-### Silver Plan
-Two cars with seperate controls that allows for 2 players to interact with the ball and compete. There is a 5 minutes timer on each match
-Add controls for a jump
-### Gold Plan
-Around the stadium are 6 hubs that provide 'boost', boost is used as fuel for the jet engines that speed up and can propel the cars. 
-Extenstive controls for a dodge-jump that allow a second jump with a direction that propels the car in that direction
-Game has a welcome screen, and different match options like changing the time.
+# Rocketball
+
+majicmaj.github.io
+
+Rocketball is a soccer-playing jet-engine-strapped-car game. Created with javascript, with physics handled by matter.js
+
+## Getting Started
+
+Go to majicmaj.github.io 
+To get started with your own copy, simply clone down this repo and launch index.html to play your own instance
+
+### Prerequisites
+
+What things you need to install the software and how to install them
+
+```
+Any Web browser
+Probably a computer
+a keyboard (the thing with the buttons on it)
+```
+`
+## Plan
+Bronze (Complete): Create a car object and a ball object that can interact with eachother
+Silver (Complete): Add a second player and a stadium, with Goals that you can score in
+Gold (Complete): Add jumping and rocket-boosting capabilities, add a timer and display scores on-screen
+
+### Future Features
+-Multiplayer support
+-User authentication
+-Gamemodes
+-Car custiomization
+-Particle effects for boost
+-Controller support
+
+## Deployment
+
+If you're deploying this on a live system make sure that matter.js is located in the same directory as script.js.
+
+## Built With
+
+* [matter.js](http://brm.io/matter-js/index.html) - The web framework used
+
+## Contributing
+
+Coming soon!
+
+## Authors
+
+* **Majd Tarbin**
+
+## License
+
+This project is licensed under the MIT License.
+
+## Acknowledgments
+
+Inspired by Rocket League.

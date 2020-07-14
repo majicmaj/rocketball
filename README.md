@@ -42,7 +42,10 @@ If you're deploying this on a live system make sure that matter.js is located in
 
 ## Contributing
 
-Coming soon!
+Pull Requests are welcome!
+
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z01WU4W)
+
 
 ## Authors
 

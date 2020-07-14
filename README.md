@@ -25,12 +25,12 @@ Silver (Complete): Add a second player and a stadium, with Goals that you can sc
 Gold (Complete): Add jumping and rocket-boosting capabilities, add a timer and display scores on-screen
 
 ### Future Features
--Multiplayer support
--User authentication
--Gamemodes
--Car custiomization
--Particle effects for boost
--Controller support
+- Multiplayer support
+- User authentication
+- Gamemodes
+- Car custiomization
+- Particle effects for boost
+- Controller support
 
 ## Deployment
 
